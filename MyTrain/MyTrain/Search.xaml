@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pancake="clr-namespace:Xamarin.Forms.PancakeView;assembly=Xamarin.Forms.PancakeView"
+             xmlns:tool="http://xamarin.com/schemas/2020/toolkit"
+             x:Class="MyTrain.Search">
+    <ContentPage.Content>
+        <StackLayout>
+            <StackLayout Orientation="Horizontal">
+                <pancake:PancakeView BackgroundColor="#CCCCCC" CornerRadius="6" Padding="7" Margin="20, 20, 0, 10"  HorizontalOptions="Center">
+                    <Image Source="back.png" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="20" HeightRequest="17"/>
+                </pancake:PancakeView>
+                <Label Text="Поиск билетов" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center" Margin="-80, 25, 0, 0" TextColor="#1D1617" HorizontalOptions="CenterAndExpand"/>
+            </StackLayout>
+            <pancake:PancakeView BackgroundColor="#EDEDED" CornerRadius="20" Padding="7" Margin="25, 70, 0, 0" WidthRequest="340" HorizontalOptions="Center" >
+                <Grid>
+                    <Entry x:Name="DepartureCityEntry"  Grid.Column="0" FontSize="15" IsEnabled="False" Placeholder="Откуда" Keyboard="Text" Margin="10, 0, 0, 0">
+                        <Entry.Effects>
+                            <tool:RemoveBorderEffect />
+                        </Entry.Effects>
+                    </Entry>
+                </Grid>
+                <pancake:PancakeView.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="DepartureCityEntry_Tapped"/>
+                </pancake:PancakeView.GestureRecognizers>
+            </pancake:PancakeView>
+            <StackLayout Orientation="Horizontal">
+                <pancake:PancakeView BackgroundColor="#EDEDED" CornerRadius="20" Padding="7" Margin="41, 10, 0, 0" WidthRequest="340" HorizontalOptions="Center" >
+                    <Grid>
+                        <Entry x:Name="ArrivalCityEntry" Grid.Column="0" FontSize="15" IsEnabled="False" Placeholder="Куда" Keyboard="Text" Margin="10, 0, 0, 0">
+                            <Entry.Effects>
+                                <tool:RemoveBorderEffect />
+                            </Entry.Effects>
+                        </Entry>
+                    </Grid>
+                    <pancake:PancakeView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="ArrivalCityEntry_Tapped"/>
+                    </pancake:PancakeView.GestureRecognizers>
+                </pancake:PancakeView>
+                <Image Source="Swap.png" Grid.Column="0" Margin="-386, -60, 0, 0" WidthRequest="25" HeightRequest="25" />
+            </StackLayout>
+            <StackLayout Orientation="Horizontal">
+            <!--<pancake:PancakeView BackgroundColor="#EDEDED" CornerRadius="20" Padding="7" Margin="15, 10, 0, 0" WidthRequest="175" HorizontalOptions="Center" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="Passengers.png" Grid.Column="0" Margin="3" />
+                        <Entry x:Name="PassengerCountEntry" Grid.Column="1" IsEnabled="False" FontSize="15" Placeholder="Пассажиров" Keyboard="Text">
+                        <Entry.Effects>
+                            <tool:RemoveBorderEffect />
+                        </Entry.Effects>
+                    </Entry>
+                </Grid>
+                    <pancake:PancakeView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="PassengerCountEntry_Tapped"/>
+                    </pancake:PancakeView.GestureRecognizers>
+                </pancake:PancakeView>-->
+                <pancake:PancakeView BackgroundColor="#EDEDED" CornerRadius="20" Padding="7" Margin="41
+                                     , 10, 0, 0" WidthRequest="340" HorizontalOptions="Center">
+                    <pancake:PancakeView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnDatePickerTapped"  />
+                    </pancake:PancakeView.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="30" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Source="Calendar.png" Grid.Column="0" Margin="5" />
+                        <DatePicker x:Name="DepartureDatePicker" Grid.Column="1" FontSize="15" DateSelected="OnDateSelected" Format="d" IsVisible="False" />
+                        <Entry x:Name="DepartureDateEntry" Grid.Column="1" FontSize="15" Placeholder="Когда" Keyboard="Telephone" IsEnabled="False">
+                            <Entry.Effects>
+                                <tool:RemoveBorderEffect />
+                            </Entry.Effects>
+                        </Entry>
+                    </Grid>
+                </pancake:PancakeView>
+
+            </StackLayout>
+            <pancake:PancakeView BackgroundColor="#97A3E5" CornerRadius="20" Padding="15"  Margin="0, 10, 0, 0" WidthRequest="350" HorizontalOptions="Center">
+                <Label Text="Найти" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" FontSize="16"/>
+                <pancake:PancakeView.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="FindButton_Clicked"/>
+                </pancake:PancakeView.GestureRecognizers>
+            </pancake:PancakeView>
+            <BoxView VerticalOptions="FillAndExpand" />
+
+            <Frame BackgroundColor="White" HeightRequest="40" HorizontalOptions="FillAndExpand" VerticalOptions="End">
+                <StackLayout Orientation="Horizontal">
+                    <Image Source="Navbar_Ticket.png" WidthRequest="40" HeightRequest="40" Margin="25, 0, 0, 0"/>
+                    <Image Source="Navbar_Search_Clicked.png" WidthRequest="40" HeightRequest="40" Margin="100, 0, 0, 0"/>
+                    <Image Source="Navbar_Profile.png" WidthRequest="30" HeightRequest="30" Margin="100, 0, 0, 0">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnProfileTapped" />
+                        </Image.GestureRecognizers>
+                    </Image>
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

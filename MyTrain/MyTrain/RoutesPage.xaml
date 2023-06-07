@@ -1,0 +1,33 @@
+﻿<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pancake="clr-namespace:Xamarin.Forms.PancakeView;assembly=Xamarin.Forms.PancakeView"
+             x:Class="MyTrain.RoutesPage">
+    <ContentPage.Content>
+        <StackLayout>
+            <StackLayout Orientation="Horizontal">
+                <pancake:PancakeView BackgroundColor="#CCCCCC" CornerRadius="6" Padding="7" Margin="20, 0, 0, 10"  HorizontalOptions="Center">
+                    <Image Source="back.png" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="20" HeightRequest="17"/>
+                </pancake:PancakeView>
+                <Label Text="Маршруты" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center" Margin="-70, 5, 0, 0" TextColor="#1D1617" HorizontalOptions="CenterAndExpand"/>
+            </StackLayout>
+
+
+            <ScrollView>
+                <StackLayout x:Name="RoutesStackLayout" Spacing="10"/>
+            </ScrollView>
+            <BoxView VerticalOptions="FillAndExpand" />
+
+            <Frame BackgroundColor="White" HeightRequest="40" HorizontalOptions="FillAndExpand" VerticalOptions="End">
+                <StackLayout Orientation="Horizontal">
+                    <Image Source="Navbar_Ticket.png" WidthRequest="40" HeightRequest="40" Margin="25, 0, 0, 0"/>
+                    <Image Source="Navbar_Search_Clicked.png" WidthRequest="40" HeightRequest="40" Margin="100, 0, 0, 0"/>
+                    <Image Source="Navbar_Profile.png" WidthRequest="30" HeightRequest="30" Margin="100, 0, 0, 0">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnProfileTapped" />
+                        </Image.GestureRecognizers>
+                    </Image>
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

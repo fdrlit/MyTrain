@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pancake="clr-namespace:Xamarin.Forms.PancakeView;assembly=Xamarin.Forms.PancakeView"
+             xmlns:tool="http://xamarin.com/schemas/2020/toolkit"
+             x:Class="MyTrain.Profile">
+    <ContentPage.Content>
+        <StackLayout>
+            <StackLayout Orientation="Horizontal">
+                <pancake:PancakeView BackgroundColor="#CCCCCC" CornerRadius="6" Padding="7" Margin="20, 20, 0, 10"  HorizontalOptions="Center">
+                    <Image Source="back.png" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="20" HeightRequest="17"/>
+                </pancake:PancakeView>
+                <Label Text="Личный кабинет" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center" Margin="-80, 25, 0, 0" TextColor="#1D1617" HorizontalOptions="CenterAndExpand"/>
+            </StackLayout>
+            <Grid Margin="0, 13, 0, 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48" />
+                    <ColumnDefinition Width="55" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="240" />
+                </Grid.ColumnDefinitions>
+
+                <Image Source="NullUser.png" WidthRequest="55" Margin="-15,0,0,0" HeightRequest="55" Grid.Column="1" />
+
+                <Label x:Name="ProfileNameText" Text="Имя" FontSize="15" Margin="0, 15, 0, 0" TextColor="#1D1617" Grid.Column="2" Grid.ColumnSpan="2" LineBreakMode="TailTruncation" WidthRequest="107" HorizontalOptions="Start"/>
+                
+                <pancake:PancakeView x:Name="EditSaveButton" BackgroundColor="#97A3E5" CornerRadius="30" Padding="-70" Margin="43, 0, 0, 0" Grid.Column="3" WidthRequest="240" HorizontalOptions="Center">
+                    <Label x:Name="EditSaveButtonText" Text="Изменить" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" FontSize="14" />
+                    <pancake:PancakeView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnEditSaveButtonTapped"/>
+                    </pancake:PancakeView.GestureRecognizers>
+                </pancake:PancakeView>
+            </Grid>
+            <pancake:PancakeView BackgroundColor="#EDEDED" CornerRadius="20" Padding="7" Margin="0, 15, 0, 0" WidthRequest="300" HorizontalOptions="Center" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="Profile.png" Grid.Column="0" Margin="6" />
+                    <Entry x:Name="ProfileNameEntry" IsEnabled="False" Grid.Column="1" FontSize="15" Placeholder="Имя" Keyboard="Text">
+                        <Entry.Effects>
+                            <tool:RemoveBorderEffect />
+                        </Entry.Effects>
+                    </Entry>
+                </Grid>
+            </pancake:PancakeView>
+            <pancake:PancakeView BackgroundColor="#EDEDED" CornerRadius="20" Padding="7" Margin="0, 10, 0, 0" WidthRequest="300" HorizontalOptions="Center" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="Profile.png" Grid.Column="0" Margin="6" />
+                    <Entry x:Name="ProfileSecondNameEntry" IsEnabled="False" Grid.Column="1" FontSize="15" Placeholder="Фамилия" Keyboard="Text">
+                        <Entry.Effects>
+                            <tool:RemoveBorderEffect />
+                        </Entry.Effects>
+                    </Entry>
+                </Grid>
+            </pancake:PancakeView>
+            <pancake:PancakeView BackgroundColor="#EDEDED" CornerRadius="20" Padding="7" Margin="0, 10, 0, 0" WidthRequest="300" HorizontalOptions="Center" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="Profile.png" Grid.Column="0" Margin="6" />
+                    <Entry x:Name="ProfileMiddleNameEntry" IsEnabled="False" Grid.Column="1" FontSize="15" Placeholder="Отчество" Keyboard="Text">
+                        <Entry.Effects>
+                            <tool:RemoveBorderEffect />
+                        </Entry.Effects>
+                    </Entry>
+                </Grid>
+            </pancake:PancakeView>
+            <pancake:PancakeView BackgroundColor="#EDEDED" CornerRadius="20" Padding="7" Margin="0, 10, 0, 0" WidthRequest="300" HorizontalOptions="Center" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="Paper.png" Grid.Column="0" Margin="5" />
+                    <Entry x:Name="ProfilePassportEntry" IsEnabled="False" Grid.Column="1" FontSize="15" Placeholder="Паспортные данные" Keyboard="Numeric">
+                        <Entry.Effects>
+                            <tool:RemoveBorderEffect />
+                        </Entry.Effects>
+                    </Entry>
+                </Grid>
+            </pancake:PancakeView>
+            <pancake:PancakeView BackgroundColor="#EDEDED" CornerRadius="20" Padding="7" Margin="0, 10, 0, 0" WidthRequest="300" HorizontalOptions="Center" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="Call.png" Grid.Column="0" Margin="5" />
+                    <Entry x:Name="ProfilePhoneEntry" IsEnabled="False" Grid.Column="1" FontSize="15" Placeholder="Номер телефона" Keyboard="Telephone">
+                        <Entry.Effects>
+                            <tool:RemoveBorderEffect />
+                        </Entry.Effects>
+                    </Entry>
+                </Grid>
+            </pancake:PancakeView>
+            <pancake:PancakeView BackgroundColor="#EDEDED" CornerRadius="20" Padding="7" Margin="0, 10, 0, 0" WidthRequest="300" HorizontalOptions="Center" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="Lock.png" Grid.Column="0" Margin="5" />
+                    <Entry x:Name="ProfilePasswordEntry" IsEnabled="False" Grid.Column="1" FontSize="15" Placeholder="Пароль" IsPassword="True">
+                        <Entry.Effects>
+                            <tool:RemoveBorderEffect />
+                        </Entry.Effects>
+                    </Entry>
+                </Grid>
+            </pancake:PancakeView>
+            <BoxView VerticalOptions="FillAndExpand" />
+
+            <Frame BackgroundColor="White" HeightRequest="40" HorizontalOptions="FillAndExpand" VerticalOptions="End">
+                <StackLayout Orientation="Horizontal">
+                    <Image Source="Navbar_Ticket.png" WidthRequest="40" HeightRequest="40" Margin="25, 0, 0, 0">
+                        <Image.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTicketTapped" />
+                            </Image.GestureRecognizers>
+                        </Image>
+                    <Image Source="Navbar_Search.png" WidthRequest="40" HeightRequest="40" Margin="100, 0, 0, 0">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnSearchTapped" />
+                        </Image.GestureRecognizers>
+                    </Image>
+
+                    <Image Source="Navbar_Profile_Clicked.png" WidthRequest="30" HeightRequest="30" Margin="100, 0, 0, 0"/>
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
