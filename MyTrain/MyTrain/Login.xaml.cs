@@ -39,6 +39,20 @@ namespace MyTrain
                 return;
             }
 
+            // Проверка наличия пробелов в номере телефона и пароле
+            if (UserPhoneEntry.Text.Any(char.IsWhiteSpace) || UserPasswordEntry.Text.Any(char.IsWhiteSpace))
+            {
+                await DisplayAlert("Ошибка", "Поле номера телефона и пароля не должны содержать пробелы", "OK");
+                return;
+            }
+
+            // Проверка длины номера телефона
+            if (UserPhoneEntry.Text.Length > 11)
+            {
+                await DisplayAlert("Ошибка", "Номер телефона должен содержать не более 11 цифр", "OK");
+                return;
+            }
+
             // Поиск пользователя в базе данных
             var users = await _dataAccess.GetUsersAsync();
             var user = users.FirstOrDefault(u => u.NumberPhone == UserPhoneEntry.Text && u.Password == UserPasswordEntry.Text);
@@ -55,7 +69,7 @@ namespace MyTrain
                     Profile mainPage = new Profile(user);
                     await Navigation.PushAsync(mainPage);
                 }
-   
+
             }
             else
             {

@@ -24,7 +24,7 @@ namespace MyTrain
             this.currentUser = currentUser;
             this.wagonId = wagonId;
             this.routeId = routeId;
-            dataAccess = new DataAccess(); // Создание экземпляра класса DataAccess
+            dataAccess = new DataAccess();
             LoadPlaces();
         }
 
@@ -63,7 +63,14 @@ namespace MyTrain
                 {
                     placeLayout.GestureRecognizers.Add(new TapGestureRecognizer
                     {
-                        Command = new Command(async () => await PurchasePlace(place.Id))
+                        Command = new Command(async () =>
+                        {
+                            bool proceed = await DisplayAlert("Подтверждение", "Вы уверены, что хотите приобрести билет на это место?", "Да", "Нет");
+                            if (proceed)
+                            {
+                                await PurchasePlace(place.Id);
+                            }
+                        })
                     });
                 }
 
@@ -77,14 +84,63 @@ namespace MyTrain
 
             if (success)
             {
+                // Update the places list in the PlacesPage instance
+                var purchasedPlace = places.Find(p => p.Id == placeId);
+                if (purchasedPlace != null)
+                {
+                    purchasedPlace.UserId = currentUser.Id;
+                }
+
                 await DisplayAlert("Успех", "Место успешно приобретено.", "OK");
-                // Обновление страницы или выполнение других действий
+
+                // Update the display of places on the page
+                UpdatePlacesLayout();
             }
             else
             {
                 await DisplayAlert("Ошибка", "Не удалось приобрести место.", "OK");
-                // Дополнительная обработка ошибки
             }
         }
+
+        private void UpdatePlacesLayout()
+        {
+            // Clear the current places on the page
+            PlacesStackLayout.Children.Clear();
+
+            // Reload the updated places
+            LoadPlaces();
+        }
+
+        private async void OnProfileTapped(object sender, EventArgs e)
+        {
+            var profile = new Profile(currentUser);
+            await Navigation.PushAsync(profile);
+        }
+
+        private async void OnTicketTapped(object sender, EventArgs e)
+        {
+            var search = new TicketPage(currentUser);
+            await Navigation.PushAsync(search);
+        }
+
+        private async void OnSearchTapped(object sender, EventArgs e)
+        {
+            var search = new Search(currentUser);
+            await Navigation.PushAsync(search);
+        }
+        private async void OnBackButtonTapped(object sender, EventArgs e)
+        {
+            Page previousPage = Navigation.NavigationStack[Navigation.NavigationStack.Count - 2];
+
+            if (previousPage is MainPage || previousPage is Login)
+            {
+                await DisplayAlert("Ошибка", "Нельзя переходить к страницам авторизации и регистрации", "OK");
+            }
+            else
+            {
+                await Navigation.PopAsync();
+            }
+        }
+
     }
 }

@@ -7,10 +7,20 @@
     <ContentPage.Content>
         <StackLayout>
             <StackLayout Orientation="Horizontal">
-                <pancake:PancakeView BackgroundColor="#CCCCCC" CornerRadius="6" Padding="7" Margin="20, 20, 0, 10"  HorizontalOptions="Center">
-                    <Image Source="back.png" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="20" HeightRequest="17"/>
+                <pancake:PancakeView  x:Name="BackButton" BackgroundColor="#CCCCCC" CornerRadius="6" Padding="7" Margin="20, 20, 0, 10"  HorizontalOptions="Center">
+                    <Image Source="back.png" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="20" HeightRequest="17">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBackButtonTapped" />
+                        </Image.GestureRecognizers>
+                    </Image>
                 </pancake:PancakeView>
-                <Label Text="Личный кабинет" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center" Margin="-80, 25, 0, 0" TextColor="#1D1617" HorizontalOptions="CenterAndExpand"/>
+                <Label Text="Личный кабинет" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center" Margin="40, 25, 0, 0" TextColor="#1D1617" HorizontalOptions="CenterAndExpand"/>
+                <pancake:PancakeView x:Name="LogoutButton" BackgroundColor="#b9c1ed" CornerRadius="10" Padding="-80" Margin="43, 10, 10, 0" Grid.Column="3" WidthRequest="210" HeightRequest="200" HorizontalOptions="Center">
+                    <Label x:Name="Logout" Text="Выход" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" FontSize="14" />
+                    <pancake:PancakeView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLogoutTapped"/>
+                    </pancake:PancakeView.GestureRecognizers>
+                </pancake:PancakeView>
             </StackLayout>
             <Grid Margin="0, 13, 0, 0">
                 <Grid.ColumnDefinitions>
@@ -115,6 +125,7 @@
                     </Entry>
                 </Grid>
             </pancake:PancakeView>
+            
             <BoxView VerticalOptions="FillAndExpand" />
 
             <Frame BackgroundColor="White" HeightRequest="40" HorizontalOptions="FillAndExpand" VerticalOptions="End">

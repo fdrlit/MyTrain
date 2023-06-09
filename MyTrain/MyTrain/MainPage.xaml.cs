@@ -43,9 +43,32 @@ namespace MyTrain
                 return;
             }
 
-            if (UserPasswordEntry.Text.Length < 6)
+            // Проверка наличия пробелов и специальных символов
+            if (HasSpecialCharactersOrWhitespace(UserNameEntry.Text) ||
+                HasSpecialCharactersOrWhitespace(UserSecondNameEntry.Text) ||
+                HasSpecialCharactersOrWhitespace(UserMiddleNameEntry.Text) ||
+                HasSpecialCharactersOrWhitespace(UserPhoneEntry.Text))
             {
-                await DisplayAlert("Ошибка", "Пароль должен содержать минимум 6 символов", "OK");
+                await DisplayAlert("Ошибка", "Поля не должны содержать пробелы или специальные символы", "OK");
+                return;
+            }
+
+            // Проверка длины полей
+            if (UserNameEntry.Text.Length > 35 ||
+                UserSecondNameEntry.Text.Length > 35 ||
+                UserMiddleNameEntry.Text.Length > 35 ||
+                UserPhoneEntry.Text.Length != 11 ||
+                UserPasswordEntry.Text.Length > 20 ||
+                UserPasswordAgainEntry.Text.Length > 20)
+            {
+                await DisplayAlert("Ошибка", "Превышена максимальная длина поля", "OK");
+                return;
+            }
+
+            // Проверка совпадения паролей
+            if (UserPasswordEntry.Text != UserPasswordAgainEntry.Text)
+            {
+                await DisplayAlert("Ошибка", "Пароли не совпадают", "OK");
                 return;
             }
 
@@ -54,18 +77,6 @@ namespace MyTrain
             {
                 // Аккаунт уже существует
                 await DisplayAlert("Ошибка", "Аккаунт с таким номером телефона уже существует", "OK");
-                return;
-            }
-
-            if (UserPhoneEntry.Text.Length != 11 || !long.TryParse(UserPhoneEntry.Text, out _))
-            {
-                await DisplayAlert("Ошибка", "Пожалуйста, введите корректный номер телефона", "OK");
-                return;
-            }
-
-            if (UserPasswordEntry.Text != UserPasswordAgainEntry.Text)
-            {
-                await DisplayAlert("Ошибка", "Пароли не совпадают", "OK");
                 return;
             }
 
@@ -86,6 +97,11 @@ namespace MyTrain
             // Вывод сообщения об успешной регистрации
             await DisplayAlert("Успех", "Регистрация прошла успешно", "OK");
             await Navigation.PushAsync(new Login());
+        }
+
+        private bool HasSpecialCharactersOrWhitespace(string input)
+        {
+            return input.Any(c => char.IsWhiteSpace(c) || char.IsPunctuation(c));
         }
     }
 }

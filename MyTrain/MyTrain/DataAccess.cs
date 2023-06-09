@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using MyTrain.Models;
+using SkiaSharp;
 using Xamarin.Forms;
 using Type = MyTrain.Models.Type;
 
@@ -15,7 +17,14 @@ namespace MyTrain.Data
     {
         private readonly SqlConnection _connection;
 
-
+        private async Task HandleConnectionOpenError()
+        {
+            await App.Current.MainPage.DisplayAlert("Ошибка", "Сервер не успевает за вами, будьте немного терпеливы!", "OK");
+        }
+        private async Task HandleConnectionLoginError()
+        {
+            await App.Current.MainPage.DisplayAlert("Ошибка", "Сервер не успевает за вами, будьте немного терпеливы!", "OK");
+        }
         public DataAccess()
         {
             _connection = DatabaseHelper.GetSqlConnection();
@@ -43,10 +52,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении городов: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -71,10 +85,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при сохранении города: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
                 return false;
             }
             finally
@@ -105,10 +124,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении города: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -117,6 +141,50 @@ namespace MyTrain.Data
 
             return null;
         }
+        public async Task<City> GetCityById(int cityId)
+        {
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT * FROM [dbo].[Cities] WHERE Id = @CityId", _connection);
+                command.Parameters.AddWithValue("@CityId", cityId);
+                var reader = await command.ExecuteReaderAsync();
+
+                if (reader.Read())
+                {
+                    var city = new City
+                    {
+                        Id = reader.GetInt32(0),
+                        Name = reader.GetString(1)
+                    };
+
+                    reader.Close(); // Close the reader after reading the data
+                    _connection.Close(); // Close the connection after reading the data
+
+                    return city;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close(); // Close the connection in case of any exceptions
+            }
+
+            return null;
+        }
+
         public async Task<List<Place>> GetPlacesAsync()
         {
             var places = new List<Place>();
@@ -142,10 +210,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Handle the exception
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении мест: " + ex.Message, "OK");
-                // Additional error handling actions
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -154,6 +227,47 @@ namespace MyTrain.Data
 
             return places;
         }
+        public async Task<string> GetPlaceNumberAsync(int placeId, int userId)
+        {
+            try
+            {
+                await _connection.OpenAsync();
+                var command = new SqlCommand("SELECT Places.Name FROM Places INNER JOIN Tickets ON Places.Id = Tickets.PlaceId WHERE Tickets.UserId = @UserId AND Places.Id = @PlaceId", _connection);
+
+                command.Parameters.AddWithValue("@UserId", userId);
+                command.Parameters.AddWithValue("@PlaceId", placeId);
+                var placeName = await command.ExecuteScalarAsync();
+
+                if (placeName != null && placeName != DBNull.Value)
+                {
+                    return placeName.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return string.Empty;
+        }
+
+
+
+
+
+
 
         public async Task<List<Place>> GetPlacesByWagonIdAsync(int wagonId)
         {
@@ -180,8 +294,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка ошибки
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении мест: " + ex.Message, "OK");
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -205,8 +326,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка ошибки
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при обновлении места: " + ex.Message, "OK");
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -231,10 +359,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при сохранении места: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
                 return false;
             }
             finally
@@ -265,10 +398,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении ролей: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -293,10 +431,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при сохранении роли: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
                 return false;
             }
             finally
@@ -327,10 +470,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении поездов: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -355,10 +503,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при сохранении поезда: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
                 return false;
             }
             finally
@@ -390,10 +543,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении информации о поезде: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -429,10 +587,15 @@ namespace MyTrain.Data
 
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении вагонов: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -468,10 +631,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Handle the exception
-                Console.WriteLine("An error occurred while retrieving wagon details: " + ex.Message);
-                // Additional error handling actions
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -498,10 +666,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при сохранении вагона: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
                 return false;
             }
             finally
@@ -537,10 +710,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении вагонов: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -589,10 +767,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении пользователей: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is connecting"))
+                {
+                    await HandleConnectionLoginError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -626,10 +809,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при сохранении пользователя: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
                 return false;
             }
             finally
@@ -666,10 +854,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении маршрутов: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -700,10 +893,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при сохранении маршрута: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
                 return false;
             }
             finally
@@ -744,10 +942,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при поиске маршрутов: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -783,10 +986,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении билетов: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -814,10 +1022,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при сохранении билета: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
                 return false;
             }
             finally
@@ -825,6 +1038,53 @@ namespace MyTrain.Data
                 _connection.Close();
             }
         }
+        public async Task<List<Ticket>> GetTicketsByUserId(int userId)
+        {
+            var tickets = new List<Ticket>();
+
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT * FROM [dbo].[Tickets] WHERE [UserId] = @UserId", _connection);
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                while (reader.Read())
+                {
+                    var ticket = new Ticket
+                    {
+                        Id = reader.GetInt32(0),
+                        RouteId = reader.GetInt32(1),
+                        WagonId = reader.GetInt32(2),
+                        PlaceId = reader.GetInt32(3),
+                        UserId = reader.GetInt32(4)
+                    };
+
+                    tickets.Add(ticket);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return tickets;
+        }
+
 
         public async Task<List<Type>> GetTypesAsync()
         {
@@ -848,10 +1108,15 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при получении типов: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
             }
             finally
             {
@@ -876,16 +1141,226 @@ namespace MyTrain.Data
             }
             catch (Exception ex)
             {
-                // Обработка исключения
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при сохранении типа: " + ex.Message, "OK");
-                // Дополнительные действия по обработке исключения
-                // ...
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
                 return false;
             }
             finally
             {
                 _connection.Close();
             }
+        }
+        public async Task<List<Ticket>> GetUserTicketsAsync(int userId)
+        {
+            var tickets = new List<Ticket>();
+
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT * FROM Tickets WHERE UserId = @UserId", _connection);
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                while (reader.Read())
+                {
+                    var ticket = new Ticket
+                    {
+                        Id = reader.GetInt32(0),
+                        PlaceId = reader.GetInt32(1),
+                        WagonId = reader.GetInt32(2),
+                        RouteId = reader.GetInt32(3),
+                        UserId = reader.GetInt32(4)
+                    };
+
+                    tickets.Add(ticket);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return tickets;
+        }
+
+        // Метод для получения названия поезда по его ID
+        public async Task<string> GetTrainNameAsync(int trainId)
+        {
+            string trainName = string.Empty;
+
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT Name FROM Trains WHERE Id = @TrainId", _connection);
+                command.Parameters.AddWithValue("@TrainId", trainId);
+
+                var result = await command.ExecuteScalarAsync();
+
+                if (result != null)
+                {
+                    trainName = result.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return trainName;
+        }
+
+        // Метод для получения номера места по его ID
+       
+
+        // Метод для получения названия вагона по его ID
+        public async Task<string> GetWagonNameAsync(int wagonId)
+        {
+            string wagonName = string.Empty;
+
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT Name FROM Wagons WHERE Id = @WagonId", _connection);
+                command.Parameters.AddWithValue("@WagonId", wagonId);
+
+                var result = await command.ExecuteScalarAsync();
+
+                if (result != null)
+                {
+                    wagonName = result.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return wagonName;
+        }
+
+        // Метод для получения названия города по его ID
+        public async Task<string> GetCityNameAsync(int cityId)
+        {
+            string cityName = string.Empty;
+
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT Name FROM Cities WHERE Id = @CityId", _connection);
+                command.Parameters.AddWithValue("@CityId", cityId);
+
+                var result = await command.ExecuteScalarAsync();
+
+                if (result != null)
+                {
+                    cityName = result.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return cityName;
+        }
+
+        // Метод для получения названия класса вагона по его ID
+        public async Task<string> GetWagonClassNameAsync(int wagonId)
+        {
+            string wagonClassName = string.Empty;
+
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT T.Name FROM Wagons W INNER JOIN Types T ON W.TypeId = T.Id WHERE W.Id = @WagonId", _connection);
+                command.Parameters.AddWithValue("@WagonId", wagonId);
+
+                var result = await command.ExecuteScalarAsync();
+
+                if (result != null)
+                {
+                    wagonClassName = result.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return wagonClassName;
         }
         public async Task<bool> PurchasePlaceAsync(User currentUser, int placeId, int wagonId, int routeId)
 {
@@ -905,11 +1380,16 @@ namespace MyTrain.Data
     }
     catch (Exception ex)
     {
-        // Handle the exception
-        await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка при покупке места: " + ex.Message, "OK");
-        // Additional error handling actions
-        // ...
-        return false;
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+                return false;
     }
     finally
     {
@@ -917,6 +1397,212 @@ namespace MyTrain.Data
     }
 }
 
+        public async Task<Train> GetTrainById(int trainId)
+        {
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT * FROM [dbo].[Trains] WHERE [Id] = @TrainId", _connection);
+                command.Parameters.AddWithValue("@TrainId", trainId);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                if (reader.Read())
+                {
+                    var train = new Train
+                    {
+                        Id = reader.GetInt32(0),
+                        Name = reader.GetString(1)
+                    };
+
+                    return train;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return null;
+        }
+
+        public async Task<Wagon> GetWagonById(int wagonId)
+        {
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT * FROM [dbo].[Wagons] WHERE [Id] = @WagonId", _connection);
+                command.Parameters.AddWithValue("@WagonId", wagonId);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                if (reader.Read())
+                {
+                    var wagon = new Wagon
+                    {
+                        Id = reader.GetInt32(0),
+                        Name = reader.GetString(1),
+                        Count = reader.GetString(2),
+                        TrainsId = reader.GetInt32(3),
+                        TypeId = reader.GetInt32(4)
+                    };
+
+                    return wagon;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return null;
+        }
+
+        public async Task<City> GetCityByIdd(int cityId)
+        {
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT * FROM [dbo].[Cities] WHERE [Id] = @CityId", _connection);
+                command.Parameters.AddWithValue("@CityId", cityId);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                if (reader.Read())
+                {
+                    var city = new City
+                    {
+                        Id = reader.GetInt32(0),
+                        Name = reader.GetString(1)
+                    };
+
+                    return city;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return null;
+        }
+        public async Task<string> GetUserNameAsync(int userId)
+        {
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT [Name] FROM [dbo].[Users] WHERE [Id] = @UserId", _connection);
+                command.Parameters.AddWithValue("@UserId", userId);
+
+                var result = await command.ExecuteScalarAsync();
+
+                return result?.ToString();
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+                return null;
+            }
+            finally
+            {
+                _connection.Close();
+            }
+        }
+        public async Task<Route> GetRouteByIdAsync(int routeId)
+        {
+            try
+            {
+                await _connection.OpenAsync();
+
+                var command = new SqlCommand("SELECT * FROM [dbo].[Routes] WHERE [Id] = @RouteId", _connection);
+                command.Parameters.AddWithValue("@RouteId", routeId);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                if (reader.Read())
+                {
+                    var route = new Route
+                    {
+                        Id = reader.GetInt32(0),
+                        DepartureDate = reader.GetDateTime(1),
+                        DepartureCityId = reader.GetInt32(2),
+                        ArrivalCityId = reader.GetInt32(3),
+                        ArrivalDate = reader.GetDateTime(4),
+                        TrainsId = reader.GetInt32(5),
+                        PriceCoupe = reader.GetDecimal(6),
+                        PriceEconom = reader.GetDecimal(7)
+                    };
+
+                    return route;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("The connection was not closed. The connection's current state is open"))
+                {
+                    await HandleConnectionOpenError();
+                }
+                else
+                {
+                    // Обработка других исключений
+                    await App.Current.MainPage.DisplayAlert("Ошибка", "Произошла ошибка: " + ex.Message, "OK");
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
+            return null; // Если маршрут не найден
+        }
 
     }
 }

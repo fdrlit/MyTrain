@@ -86,5 +86,23 @@ namespace MyTrain
             // Выполнение перехода на страницу SearchPage
             await Navigation.PushAsync(profile);
         }
+        private async void OnTicketTapped(object sender, EventArgs e)
+        {
+            var ticketPage = new TicketPage(currentUser);
+            await Navigation.PushAsync(ticketPage);
+        }
+        private async void OnBackButtonTapped(object sender, EventArgs e)
+        {
+            Page previousPage = Navigation.NavigationStack[Navigation.NavigationStack.Count - 2];
+
+            if (previousPage is MainPage || previousPage is Login)
+            {
+                await DisplayAlert("Ошибка", "Нельзя переходить к страницам авторизации и регистрации", "OK");
+            }
+            else
+            {
+                await Navigation.PopAsync();
+            }
+        }
     }
 }

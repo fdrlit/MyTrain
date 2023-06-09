@@ -1,4 +1,9 @@
-﻿using Xamarin.Forms;
+﻿using MyTrain.Data;
+using MyTrain.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 namespace MyTrain
@@ -6,47 +11,75 @@ namespace MyTrain
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class TicketPage : ContentPage
     {
-        public TicketPage()
+        private User currentUser;
+        private DataAccess dataAccess;
+
+        public TicketPage(User user)
         {
             InitializeComponent();
-            AddSanatoriumButtons();
+            currentUser = user;
+            dataAccess = new DataAccess();
         }
 
-        private void AddSanatoriumButtons()
+        protected override void OnAppearing()
         {
-            var sanatorium1Button = new Button
-            {
-                Text = "Санаторий Талица",
-                HorizontalOptions = LayoutOptions.FillAndExpand
-            };
-            sanatorium1Button.Clicked += (sender, e) =>
-            {
-                Device.OpenUri(new System.Uri("https://sanatorii.net/rossiya/sverdlovskaya-oblast/talicza.html"));
-            };
+            base.OnAppearing();
+            LoadTickets();
+        }
+        private async void OnSearchTapped(object sender, EventArgs e)
+        {
+            var searchPage = new Search(currentUser);
+            await Navigation.PushAsync(searchPage);
+        }
+        private async void OnBackButtonTapped(object sender, EventArgs e)
+        {
+            Page previousPage = Navigation.NavigationStack[Navigation.NavigationStack.Count - 2];
 
-            var sanatorium2Button = new Button
+            if (previousPage is MainPage || previousPage is Login)
             {
-                Text = "Санаторий Аквамарин",
-                HorizontalOptions = LayoutOptions.FillAndExpand
-            };
-            sanatorium2Button.Clicked += (sender, e) =>
+                await DisplayAlert("Ошибка", "Нельзя переходить к страницам авторизации и регистрации", "OK");
+            }
+            else
             {
-                Device.OpenUri(new System.Uri("https://sanatorii.net/rossiya/krasnodarskij-kraj/akvamarin.html"));
-            };
+                await Navigation.PopAsync();
+            }
+        }
+        private async void OnProfileTapped(object sender, EventArgs e)
+        {
+            var profilePage = new Profile(currentUser);
+            await Navigation.PushAsync(profilePage);
+        }
+        private async void LoadTickets()
+        {
+            List<Ticket> tickets = await dataAccess.GetUserTicketsAsync(currentUser.Id);
 
-            var sanatorium3Button = new Button
+            foreach (var ticket in tickets)
             {
-                Text = "Санаторий Радугаж",
-                HorizontalOptions = LayoutOptions.FillAndExpand
-            };
-            sanatorium3Button.Clicked += (sender, e) =>
-            {
-                Device.OpenUri(new System.Uri("https://sanatorii.net/nalchik/raduga.html"));
-            };
+                var routeId = ticket.RouteId;
+                var wagonId = ticket.WagonId;
+                var placeId = ticket.PlaceId;
+                var userId = ticket.UserId;
 
-            SanatoriumsStackLayout.Children.Add(sanatorium1Button);
-            SanatoriumsStackLayout.Children.Add(sanatorium2Button);
-            SanatoriumsStackLayout.Children.Add(sanatorium3Button);
+                var wagonName = await dataAccess.GetWagonNameAsync(wagonId);
+                //var placeNumber = await dataAccess.GetPlaceNumberAsync(placeId, currentUser.Id);
+                var userName = await dataAccess.GetUserNameAsync(userId);
+
+                var ticketLayout = new StackLayout();
+
+                var wagonLabel = new Label { Text = "Вагон: " + wagonName };
+                ticketLayout.Children.Add(wagonLabel);
+
+                //var placeLabel = new Label { Text = "Место: " + placeNumber };
+                //ticketLayout.Children.Add(placeLabel);
+
+                var userLabel = new Label { Text = "Имя покупателя: " + userName };
+                ticketLayout.Children.Add(userLabel);
+
+                var separator = new BoxView { Color = Color.Gray, HeightRequest = 1 };
+                ticketLayout.Children.Add(separator);
+
+                TicketsStackLayout.Children.Add(ticketLayout);
+            }
         }
     }
 }
